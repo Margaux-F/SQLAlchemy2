@@ -125,8 +125,9 @@ if prgrm == 1:
     print("Database with deleted element:\n")
     print(printtable(connection))
     print('\n\n----------------------------------------------------')
+    print('CRUD Complete')
+    print('----------------------------------------------------\n')
 else:
     print('You asked not to run the program')
 
-print('CRUD Complete')
-print('----------------------------------------------------\n')
+
