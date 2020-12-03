@@ -110,7 +110,7 @@ if prgrm == 1:
 
     results = connection.execute(query)
 
-    print("Database with update:\n")
+    print("\nDatabase with update:\n")
     print(printtable(connection))
     print('\n----------------------------------------------------\n')
 
