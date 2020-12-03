@@ -11,8 +11,7 @@ from populate import populate
 import sqlalchemy as db
 from models import Books
 import pandas as pd
-
-#-----------------------------
+# ----------------------------
 # Create the database --> C
 # ----------------------------
 
@@ -86,7 +85,7 @@ prgrm = 1
 prgrm = Checkdb(dbname)
 if prgrm == 1:
     # ---------------------------------
-    # How to read a database ?  --> R
+    # How to read a table ?  --> R
     # ---------------------------------
 
     engine = db.create_engine(f'mysql+pymysql://{username}:{password}@{host}/{dbname}')
@@ -95,7 +94,7 @@ if prgrm == 1:
     def printtable(connection): # Def a function that print a database using pandas
         return pd.DataFrame(connection.execute("SELECT * FROM books"))
 
-    print("Original database:\n")
+    print("\nOriginal database:\n")
     print(printtable(connection))
     print('\n----------------------------------------------------\n')
 
@@ -104,9 +103,11 @@ if prgrm == 1:
     # Update book  --> U
     # ---------------------------
     print('Which book have you read ?')
+    
     bookupdate = str(input('Book Title: '))
+    query = db.update(Books).values(ReadOrNot="1").where(Books.Title=="{}".format(bookupdate))
 
-    query = db.update(Books).values(ReadOrNot="1").where(Books.Title == "{}".format(bookupdate))
+
     results = connection.execute(query)
 
     print("Database with update:\n")
@@ -123,7 +124,9 @@ if prgrm == 1:
 
     print("Database with deleted element:\n")
     print(printtable(connection))
-    print('\n----------------------------------------------------\n')
+    print('\n\n----------------------------------------------------')
 else:
     print('You asked not to run the program')
 
+print('CRUD Complete')
+print('----------------------------------------------------\n')
