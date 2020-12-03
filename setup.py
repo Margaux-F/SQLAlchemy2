@@ -103,9 +103,10 @@ if prgrm == 1:
     # ---------------------------
     # Update book  --> U
     # ---------------------------
+    print('Which book have you read ?')
+    bookupdate = str(input('Book Title: '))
 
-
-    query = db.update(Books).values(ReadOrNot="1").where(Books.Title=="The World as I See It")
+    query = db.update(Books).values(ReadOrNot="1").where(Books.Title == "{}".format(bookupdate))
     results = connection.execute(query)
 
     print("Database with update:\n")
@@ -117,7 +118,7 @@ if prgrm == 1:
     # Suppresion du livre lu "The World as I See It" --> D
     # ------------------------------------------------------
 
-    query = db.delete(Books).where(Books.Title == "The World as I See It")
+    query = db.delete(Books).where(Books.Title == "{}".format(bookupdate))
     results = connection.execute(query)
 
     print("Database with deleted element:\n")
