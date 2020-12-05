@@ -126,11 +126,15 @@ def Checkdb(dbname):
                 data = json.load(f)
 
             for i in data['books']:
+                book_data = Books(Title = i["Title"])
                 exists = session.query(Books.title).filter_by(Title = '{}'.format(i["Title"])).scalar() is not None #Check if the data exists
-                if exists == None: #If the data does not exist, it is implemented
-                    session.add(Books(Title = i["Title"], Author = i["Author"], ReadOrNot = "0"))  
-                else: #It the book already exists, it is not added
+                print('exists=',exists)
+                if exists == None: 
                     pass
+                else: 
+                    session = connect(dbname)
+                    book_data = Books(Title = i["Title"], Author = i["Author"], ReadOrNot = "0")
+                    session.add(book_data) 
             session.commit
             return prgrm #The program will run properly
 
@@ -140,7 +144,7 @@ def Checkdb(dbname):
             return prgrm
 
         print('----------------------------------------------------\n')
-
+        
 prgrm = 1 
 prgrm = Checkdb(dbname)
 if prgrm == 1:
