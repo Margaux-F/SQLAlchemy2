@@ -9,7 +9,7 @@ from datetime import datetime
 from createtables import createtables
 from populate import populate
 import sqlalchemy as db
-from sqlalchemy import Metadata
+from sqlalchemy import MetaData
 from models import Books
 import pandas as pd
 
@@ -33,9 +33,11 @@ with open("config.json") as f: #Load data for the configuration
         password = config["password"]
         host = config["host"]
         port = config["port"]
+def chosetable():
+    return(str(input('Your choice: ' )))
 
 def Checkdb(dbname):
-    prgrm = 1 #Default value for the program to run properly
+    prgrm = 1 #Default value for the program to run
     if checkdb(dbname) is True: #Check the existance of the database (if exists or not)
         """
         The database does not exist: we need to create it from scratch and populate it
@@ -52,10 +54,10 @@ def Checkdb(dbname):
         print('\n----------------------------------------------------')
         print("Setup is finished. Your database is now available.")
         print("The process was completed in : " + str(
-            timeDetla.total_seconds()) + "s.") #Total time
+            timeDetla.total_seconds()) + "s.") #Total time for the database's setup
         print('----------------------------------------------------\n')
         return prgrm
-   else:
+    else:
         print("Your database already exists.\n")
         print('Here are the tables and their columns that exists : ')
 
@@ -67,32 +69,46 @@ def Checkdb(dbname):
 
         m = MetaData()
         m.reflect(engine)
+        listtable = []
         for table in m.tables.values():
-            print("Table name: ", table.name, "\n")
+            listtable.append(table.name)
+            print("\nTable name: ", table.name, "\n")
             for column in table.c:
                 print("Column name: ", column.name)
 
         print('\nDo you want to see what is inside a specific table ? ')
         print('1 = You want to see inside a table.')
-        print('Other integer : do not show anything')
-        print('Which table do you want to see ? \n')
+        print('Other integer : do not show anything\n')
         
         try: 
             choice = int(input('Your choice : '))
         except ValueError:
-            print('The input is not right. We will consider you do not want to see anything\n')
+            print('\nThe input is not right. We will consider you do not want to see anything\n')
             choice = 0
-        
+
         if choice == 1:
-            print('You asked to see what is inside a database. Which one do you want to see ? ')
-            databasechosen = str(input('Your choise :' ))
-            print(pd.DataFrame(connection.execute("SELECT * FROM {}".format(databasechosen)))
+            print('\nYou asked to see what is inside a table. Which one do you want to see ? \n')
+            try: 
+                tablechosen = chosetable()
+            except ValueError:
+                print('\nPlease write a valid input (string)')
+                tablechosen = chosetable()
+            
+            try:
+                existingtable = listtable.index(tablechosen)
+            except ValueError:
+                print("You did not entered a valid table name...")
+                print("Please write a valid one now\n")
+                tablechosen = chosetable()
+            else:
+                print(pd.DataFrame(connection.execute("SELECT * FROM {}".format(tablechosen))))
+
         else:
             pass
 
-        print('Do you want to add the data that does not exist (without deleting the previously existing one ?')
+        print('\nDo you want to add the data that does not exist (without deleting the previously existing one ?')
         print('1 = You want to add the data and run the program')
-        print('Other integer : do not do anything : the program will stop')
+        print('Other integer : Do not do anything. The program will stop\n')
 
 
         try:
@@ -109,7 +125,7 @@ def Checkdb(dbname):
                 data = json.load(f)
 
             for i in data['books']:
-                exists = db.session.query(Books.title).filter_by(Title = '{}'.format(i["Title"])).scalar() is not None #Check if the data exists
+                exists = session.query(Books.title).filter_by(Title = '{}'.format(i["Title"])).scalar() is not None #Check if the data exists
                 if exists == None: #If the data does not exist, it is implemented
                     session.add(Books(Title = i["Title"], Author = i["Author"], ReadOrNot = "0"))  
                 else: #It the book already exists, it is not added
