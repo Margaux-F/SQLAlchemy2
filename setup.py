@@ -9,6 +9,7 @@ from datetime import datetime
 from createtables import createtables
 from populate import populate
 import sqlalchemy as db
+from sqlalchemy import Metadata
 from models import Books
 import pandas as pd
 
@@ -21,20 +22,20 @@ print('\n\n----------------------------------------------------')
 print("Setup in progress. Please wait.")
 print('----------------------------------------------------\n')
 
+# Name the database, and the place we take the raw data from
 dbname = 'booklist' #Name the database
 rawdata = 'data.json' #Where does the raw data comes from
 
-
 with open("config.json") as f: #Load data for the configuration
         config = json.load(f)
-
+        
         username = config["username"]
         password = config["password"]
         host = config["host"]
         port = config["port"]
 
 def Checkdb(dbname):
-    prgrm = 1
+    prgrm = 1 #Default value for the program to run properly
     if checkdb(dbname) is True: #Check the existance of the database (if exists or not)
         createdb(dbname) #Create the database
         session = connect(dbname) #Connect to the database
