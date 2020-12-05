@@ -37,6 +37,9 @@ with open("config.json") as f: #Load data for the configuration
 def Checkdb(dbname):
     prgrm = 1 #Default value for the program to run properly
     if checkdb(dbname) is True: #Check the existance of the database (if exists or not)
+        """
+        The database does not exist: we need to create it from scratch and populate it
+        """
         createdb(dbname) #Create the database
         session = connect(dbname) #Connect to the database
 
@@ -52,7 +55,7 @@ def Checkdb(dbname):
             timeDetla.total_seconds()) + "s.") #Total time
         print('----------------------------------------------------\n')
         return prgrm
-       else:
+   else:
         print("Your database already exists.\n")
         print('Here are the tables and their columns that exists : ')
 
