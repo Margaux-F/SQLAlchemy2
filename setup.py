@@ -33,7 +33,8 @@ with open("config.json") as f: #Load data for the configuration
         password = config["password"]
         host = config["host"]
         port = config["port"]
-def chosetable():
+        
+def choosetable():
     return(str(input('Your choice: ' )))
 
 def Checkdb(dbname):
@@ -89,17 +90,17 @@ def Checkdb(dbname):
         if choice == 1:
             print('\nYou asked to see what is inside a table. Which one do you want to see ? \n')
             try: 
-                tablechosen = chosetable()
+                tablechosen = choosetable()
             except ValueError:
                 print('\nPlease write a valid input (string)')
-                tablechosen = chosetable()
+                tablechosen = choosetable()
             
             try:
                 existingtable = listtable.index(tablechosen)
             except ValueError:
                 print("You did not entered a valid table name...")
                 print("Please write a valid one now\n")
-                tablechosen = chosetable()
+                tablechosen = choosetable()
             else:
                 print(pd.DataFrame(connection.execute("SELECT * FROM {}".format(tablechosen))))
 
