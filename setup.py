@@ -11,6 +11,7 @@ from populate import populate
 import sqlalchemy as db
 from models import Books
 import pandas as pd
+
 # ----------------------------
 # Create the database --> C
 # ----------------------------
@@ -50,30 +51,68 @@ def Checkdb(dbname):
             timeDetla.total_seconds()) + "s.") #Total time
         print('----------------------------------------------------\n')
         return prgrm
-    else:
+       else:
         print("Your database already exists.\n")
-        print('Do you want to delete the tables to run the program anyway ?')
-        print('1 = Delete the tables and recreate others.')
-        print('Other integer: do not run the program\n')
+        print('Here are the tables and their columns that exists : ')
+
+        engine = db.create_engine(f'mysql+pymysql://{username}:{password}@{host}/{dbname}')
+        connection = engine.connect() #Connect
+        session = connect(dbname) #Connect to the database
+
+        metadata = MetaData(bind = engine)
+
+        m = MetaData()
+        m.reflect(engine)
+        for table in m.tables.values():
+            print("Table name: ", table.name, "\n")
+            for column in table.c:
+                print("Column name: ", column.name)
+
+        print('\nDo you want to see what is inside a specific table ? ')
+        print('1 = You want to see inside a table.')
+        print('Other integer : do not show anything')
+        print('Which table do you want to see ? \n')
+        
+        try: 
+            choice = int(input('Your choice : '))
+        except ValueError:
+            print('The input is not right. We will consider you do not want to see anything\n')
+            choice = 0
+        
+        if choice == 1:
+            print('You asked to see what is inside a database. Which one do you want to see ? ')
+            databasechosen = str(input('Your choise :' ))
+            print(pd.DataFrame(connection.execute("SELECT * FROM {}".format(databasechosen)))
+        else:
+            pass
+
+        print('Do you want to add the data that does not exist (without deleting the previously existing one ?')
+        print('1 = You want to add the data and run the program')
+        print('Other integer : do not do anything : the program will stop')
+
 
         try:
             Choice = int(input('Your choice : '))
         except ValueError:
-            print("The input is not right...\n")
+            print("The input is not right... We will consider you do not want the program to run.\n")
             prgrm = 0
             return prgrm
 
         if Choice == 1:
-            engine = db.create_engine(f'mysql+pymysql://{username}:{password}@{host}/{dbname}')
-            connection = engine.connect() #Connect
+            session = connect(dbname)
 
-            session = connect(dbname) #Connect to the database
+            with open('data.json') as f:
+                data = json.load(f)
 
-            query = db.delete(Books)
-            results = connection.execute(query) 
+            for i in data['books']:
+                exists = db.session.query(Books.title).filter_by(Title = '{}'.format(i["Title"])).scalar() is not None #Check if the data exists
+                if exists == None: #If the data does not exist, it is implemented
+                    session.add(Books(Title = i["Title"], Author = i["Author"], ReadOrNot = "0"))  
+                else: #It the book already exists, it is not added
+                    pass
+            session.commit
+            return prgrm #The program will run properly
 
-            populate(dbname, rawdata) #Populate the database with what we want
-            return prgrm
         else : 
             prgrm = 0
             print('The program will not run')
