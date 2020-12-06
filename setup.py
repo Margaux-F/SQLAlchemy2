@@ -122,6 +122,7 @@ def Checkdb(dbname):
         if Choice == 1:
             # Create a code that add the data from the jason file
             # if it does not exist in the table          
+            # This code still have an issue (up to line 155)
 
             # Take the data in the table:
             session = connect(dbname)
