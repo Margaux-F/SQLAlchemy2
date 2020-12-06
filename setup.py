@@ -120,23 +120,37 @@ def Checkdb(dbname):
             return prgrm
 
         if Choice == 1:
-            session = connect(dbname)
+            # Create a code that add the data from the jason file
+            # if it does not exist in the table          
 
-            with open('data.json') as f:
+            # Take the data in the table:
+            session = connect(dbname)
+            unique_list = [] # Defines the list which will contain all existing data
+            BookList = session.query(Books).all()
+            print("BookList",BookList)
+
+            for book in BookList:
+                unique_list.append(book)
+            print("unique List:", unique_list )
+
+            # Takes the data in the json file:
+            with open('data.json') as f: #Load the file
                 data = json.load(f)
 
-            for i in data['books']:
-                book_data = Books(Title = i["Title"])
-                exists = session.query(Books.title).filter_by(Title = '{}'.format(i["Title"])).scalar() is not None #Check if the data exists
-                print('exists=',exists)
-                if exists == None: 
-                    pass
-                else: 
-                    session = connect(dbname)
+            for i in data['books']: # Extract the title
+                H = 1
+                book_data = str(Books(Title = i["Title"]))
+                print("Bookdata", book_data)
+                for j in unique_list:
+                    if book_data == j:
+                        H = 0
+                if H == 1:
                     book_data = Books(Title = i["Title"], Author = i["Author"], ReadOrNot = "0")
-                    session.add(book_data) 
-            session.commit
+                    session.add(book_data)
+                    session.commit()
+   
             return prgrm #The program will run properly
+              
 
         else : 
             prgrm = 0
