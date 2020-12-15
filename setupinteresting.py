@@ -9,9 +9,12 @@ from datetime import datetime
 from createtables import createtables
 from populate import populate
 import sqlalchemy as db
-from sqlalchemy import MetaData
 from models import Books
 import pandas as pd
+from sqlalchemy import MetaData
+from sqlalchemy.sql import select
+from django.db import models
+
 
 # ----------------------------
 # Create the database --> C
@@ -28,12 +31,12 @@ rawdata = 'data.json' #Where does the raw data comes from
 
 with open("config.json") as f: #Load data for the configuration
         config = json.load(f)
-        
+
         username = config["username"]
         password = config["password"]
         host = config["host"]
         port = config["port"]
-        
+
 def choosetable():
     return(str(input('Your choice: ' )))
 
@@ -67,11 +70,11 @@ def Checkdb(dbname):
         session = connect(dbname) #Connect to the database
 
         metadata = MetaData(bind = engine)
-
+    
         m = MetaData()
         m.reflect(engine)
         listtable = []
-        for table in m.tables.values():
+        for table in m.tables.values(): #Create a list 
             listtable.append(table.name)
             print("\nTable name: ", table.name, "\n")
             for column in table.c:
@@ -120,48 +123,36 @@ def Checkdb(dbname):
             return prgrm
 
         if Choice == 1:
+            
+
             # Create a code that add the data from the jason file
             # if it does not exist in the table          
-            # This code still have an issue (up to line 155)
 
-            # Take the data in the table:
-            session = connect(dbname)
-            unique_list = [] # Defines the list which will contain all existing data
-            BookList = session.query(Books).all()
-            print("BookList",BookList)
+            
+            with open('data.json') as f:
+                data_json = json.load(f)
 
-            for book in BookList:
-                unique_list.append(book)
-            print("unique List:", unique_list )
+            for data in data_json:
+                if not Books.objects.filter(Title = data['Title']).exists:
+                    data = Books(Title = data['Title'],
+                            Author = data['Author'],
+                            ReadOrNot = '0')
+                    data.save()
+                    print(f"Added to the database:  {data.Title} \ (TITLE {data.Title}). ")
+                else : 
+                    print(f'This book already exists: \ {Books.objects.get(Title = data["Title"]).Title} (TITLE: {data["Title"]}).')
+            
 
-            # Takes the data in the json file:
-            with open('data.json') as f: #Load the file
-                data = json.load(f)
-
-            for i in data['books']: # Extract the title
-                H = 1
-                book_data = str(Books(Title = i["Title"]))
-                print("Bookdata", book_data)
-                for j in unique_list:
-                    if book_data == j:
-                        H = 0
-                if H == 1:
-                    book_data = Books(Title = i["Title"], Author = i["Author"], ReadOrNot = "0")
-                    session.add(book_data)
-                    session.commit()
-   
             return prgrm #The program will run properly
-              
 
         else : 
             prgrm = 0
             print('The program will not run')
             return prgrm
 
-        print('----------------------------------------------------\n')
-        
 prgrm = 1 
 prgrm = Checkdb(dbname)
+
 if prgrm == 1:
     # ---------------------------------
     # How to read a table ?  --> R
@@ -173,7 +164,7 @@ if prgrm == 1:
     def printtable(connection): # Def a function that print a database using pandas
         return pd.DataFrame(connection.execute("SELECT * FROM books"))
 
-    print("\nOriginal database:\n")
+    print("\nDatabase populated:\n")
     print(printtable(connection))
     print('\n----------------------------------------------------\n')
 
@@ -182,14 +173,15 @@ if prgrm == 1:
     # Update book  --> U
     # ---------------------------
     print('Which book have you read ?')
-    
+
     bookupdate = str(input('Book Title: '))
     query = db.update(Books).values(ReadOrNot="1").where(Books.Title=="{}".format(bookupdate))
 
-
     results = connection.execute(query)
 
-    print("\nDatabase with update:\n")
+    print('\nCongrats on reading {} ! \n'.format(bookupdate))
+
+    print("Database with update:\n")
     print(printtable(connection))
     print('\n----------------------------------------------------\n')
 
@@ -200,7 +192,10 @@ if prgrm == 1:
 
     query = db.delete(Books).where(Books.Title == "{}".format(bookupdate))
     results = connection.execute(query)
-
+    
+    print('\nThe book you have read has been deleted from the list.\n')
+    print('The book deleted is {}\n.'.format(bookupdate))
+    
     print("Database with deleted element:\n")
     print(printtable(connection))
     print('\n\n----------------------------------------------------')
@@ -208,5 +203,6 @@ if prgrm == 1:
     print('----------------------------------------------------\n')
 else:
     print('You asked not to run the program')
+
 
 
